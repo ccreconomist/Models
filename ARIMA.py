@@ -1,38 +1,31 @@
 import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+from statsmodels.tsa.arima.model import ARIMA
 import matplotlib.pyplot as plt
-from statsmodels.tsa.seasonal import seasonal_decompose
-from statsmodels.tsa.arima_model import ARIMA
 
-# Cargar los datos desde el archivo Excel
-ruta_archivo = 'C:\\Users\\MX49954\\BC-cines2.xlsx'
-datos = pd.read_excel(ruta_archivo)
+# Datos de ejemplo (fechas y valores)
+fechas = pd.date_range(start='2020-01-01', periods=12, freq='M')
+ventas = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210]
 
-# Configurar las columnas de fecha y datos para el análisis
-datos['FECHA_CONSUMO'] = pd.to_datetime(datos['FECHA_CONSUMO'])
-datos.set_index('FECHA_CONSUMO', inplace=True)
-serie_temporal = datos['Suma_IMP_DESTINO']
+# Crear una serie de tiempo a partir de los datos
+serie_temporal = pd.Series(ventas, index=fechas)
 
-# Visualización de datos
-plt.plot(serie_temporal)
-plt.title("Serie Temporal de Suma_IMP_DESTINO")
+# Ajustar el modelo ARIMA (por ejemplo, ARIMA(1,1,1))
+modelo_arima = ARIMA(serie_temporal, order=(1, 1, 1))
+modelo_arima_fit = modelo_arima.fit()
+
+# Resumen del modelo ARIMA
+print(modelo_arima_fit.summary())
+
+# Visualizar resultados del ajuste
+modelo_arima_fit.plot_predict(dynamic=False)
 plt.show()
 
-# Descomposición de serie de tiempo
-decomposition = seasonal_decompose(serie_temporal, model='multiplicative')
-tendencia = decomposition.trend
-estacionalidad = decomposition.seasonal
-ruido = decomposition.resid
+# Hacer predicciones para el futuro (por ejemplo, para los próximos 12 meses)
+predicciones = modelo_arima_fit.forecast(steps=12)
+print("Predicciones para los próximos 12 meses:")
+print(predicciones)
 
-# Ajuste del modelo ARIMA
-modelo = ARIMA(serie_temporal, order=(p, d, q))
-modelo_ajustado = modelo.fit(disp=-1)
 
-# Pronóstico
-pronostico = modelo_ajustado.forecast(steps=numero_de_pronostico)
 
-# Visualizar el pronóstico
-plt.plot(serie_temporal, label='Datos originales')
-plt.plot(pronostico, color='red', label='Pronóstico')
-plt.legend()
-plt.title("Pronóstico utilizando ARIMA")
-plt.show()
